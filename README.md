@@ -14,6 +14,7 @@ Built with React, Next.js, Material UI, and Recharts.
 - **Streaks** — longest win streak per team, current streak, and a visual breakdown of the last 10 matchups
 - **Franchise Normalization** — historical team names (e.g. Oakland Raiders, St. Louis Rams, Washington Redskins) are automatically mapped to their current franchise
 - **Shareable Links** — every matchup has a direct URL (`/rivalry?teamA=...&teamB=...`) and a share button using the Web Share API with clipboard fallback
+- **Social Login** — sign in with Google, Apple, Meta (Facebook), or GitHub via NextAuth.js; user avatar and menu in the navbar
 - **Dark NFL Theme** — team-specific accent colors, responsive layout for desktop and mobile
 - **PWA Support** — web app manifest for home screen installation
 
@@ -34,6 +35,31 @@ cd Head2Head-Analyzer
 # Install dependencies
 npm install
 ```
+
+### Configure Authentication
+
+Copy the example env file and fill in your OAuth credentials:
+
+```bash
+cp .env.local.example .env.local
+```
+
+Then edit `.env.local` with your provider credentials:
+
+| Provider | Where to get credentials |
+|----------|--------------------------|
+| Google | [Google Cloud Console](https://console.cloud.google.com/apis/credentials) |
+| GitHub | [GitHub Developer Settings](https://github.com/settings/developers) |
+| Apple | [Apple Developer Portal](https://developer.apple.com/account/resources/identifiers) |
+| Meta | [Meta for Developers](https://developers.facebook.com/apps) |
+
+Generate a `NEXTAUTH_SECRET` with:
+
+```bash
+openssl rand -base64 32
+```
+
+The app works without credentials configured — the login page will show the buttons in a disabled state with a setup prompt.
 
 ### Running in Development
 
@@ -59,9 +85,10 @@ The production server runs on port 3000 by default.
 │   ├── data/
 │   │   └── 1926-2024_COMBINED_NFL_SCORES.csv   # Game dataset
 │   └── manifest.json                           # PWA manifest
+├── .env.local.example                             # OAuth env template
 ├── src/
 │   ├── components/
-│   │   ├── Layout.js            # App shell (navbar + footer)
+│   │   ├── Layout.js            # App shell (navbar + auth controls + footer)
 │   │   ├── TeamSelector.js      # Dual team Autocomplete dropdowns
 │   │   ├── RecordSummary.js     # Win/loss record, splits, blowouts
 │   │   ├── Timeline.js          # Recharts scatter chart
@@ -70,9 +97,12 @@ The production server runs on port 3000 by default.
 │   ├── context/
 │   │   └── DataContext.js       # Global data loading via PapaParse
 │   ├── pages/
-│   │   ├── _app.js              # Theme + data providers
+│   │   ├── api/auth/
+│   │   │   └── [...nextauth].js # NextAuth API (Google, GitHub, Apple, Meta)
+│   │   ├── _app.js              # SessionProvider + Theme + data providers
 │   │   ├── _document.js         # HTML document setup
 │   │   ├── index.js             # Home page
+│   │   ├── login.js             # Social login page
 │   │   └── rivalry.js           # Rivalry analysis page
 │   ├── styles/
 │   │   └── globals.css          # Global styles
@@ -106,8 +136,9 @@ Ties are represented as rows where `WTS` equals `LTS`.
 
 | Layer | Technology |
 |-------|------------|
-| Framework | [Next.js 14](https://nextjs.org/) (Pages Router) |
+| Framework | [Next.js 15](https://nextjs.org/) (Pages Router) |
 | UI | [React 18](https://react.dev/) |
+| Auth | [NextAuth.js 4](https://next-auth.js.org/) (Google, GitHub, Apple, Meta) |
 | Components | [Material UI 5](https://mui.com/) |
 | Charts | [Recharts](https://recharts.org/) |
 | CSV Parsing | [PapaParse](https://www.papaparse.com/) |
