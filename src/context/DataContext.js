@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
+import { useSession } from 'next-auth/react';
 import Papa from 'papaparse';
 import { parseGames, getUniqueTeams } from '@/utils/dataProcessing';
 import { CURRENT_TEAMS } from '@/utils/teamMappings';
@@ -6,16 +7,24 @@ import { CURRENT_TEAMS } from '@/utils/teamMappings';
 const DataContext = createContext(null);
 
 export function DataProvider({ children }) {
+  const { status } = useSession();
   const [games, setGames] = useState([]);
   const [allTeams, setAllTeams] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
   useEffect(() => {
+    // Only fetch game data once the user is authenticated
+    if (status !== 'authenticated') {
+      setLoading(status === 'loading');
+      return;
+    }
+
     async function loadData() {
       try {
-        const response = await fetch('/data/1926-2024_COMBINED_NFL_SCORES.csv');
-        if (!response.ok) throw new Error('Failed to fetch CSV data');
+        const response = await fetch('/api/games');
+        if (response.status === 401) throw new Error('Please sign in to access game data');
+        if (!response.ok) throw new Error('Failed to fetch game data');
         const csvText = await response.text();
 
         const result = Papa.parse(csvText, {
@@ -45,7 +54,7 @@ export function DataProvider({ children }) {
     }
 
     loadData();
-  }, []);
+  }, [status]);
 
   return (
     <DataContext.Provider value={{ games, allTeams, loading, error }}>
