@@ -1,5 +1,6 @@
 import React from 'react';
-import { getProviders, signIn, getCsrfToken } from 'next-auth/react';
+import { signIn, getCsrfToken } from 'next-auth/react';
+import { authOptions } from '@/pages/api/auth/[...nextauth]';
 import {
   Box,
   Paper,
@@ -192,11 +193,21 @@ export default function LoginPage({ providers, csrfToken }) {
 }
 
 export async function getServerSideProps(context) {
-  const providers = await getProviders();
+  // Build providers map directly from authOptions instead of making an
+  // internal HTTP call via getProviders(), which fails on Vercel because
+  // the server cannot reliably reach itself at NEXTAUTH_URL during SSR.
+  const providers = {};
+  for (const provider of authOptions.providers) {
+    const p = typeof provider === 'function' ? provider() : provider;
+    if (p.options?.clientId || p.clientId) {
+      providers[p.id] = { id: p.id, name: p.name, type: p.type };
+    }
+  }
+
   const csrfToken = await getCsrfToken(context);
   return {
     props: {
-      providers: providers ?? {},
+      providers,
       csrfToken: csrfToken ?? null,
     },
   };
