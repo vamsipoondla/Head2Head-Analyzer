@@ -16,6 +16,7 @@ import {
   ListItemText,
 } from '@mui/material';
 import SportsFootballIcon from '@mui/icons-material/SportsFootball';
+import CasinoIcon from '@mui/icons-material/Casino';
 import LoginIcon from '@mui/icons-material/Login';
 import LogoutIcon from '@mui/icons-material/Logout';
 import Link from 'next/link';
@@ -62,6 +63,23 @@ export default function Layout({ children, title }) {
               >
                 NFL Rivalry Analyzer
               </Typography>
+            </Link>
+
+            {/* Games link */}
+            <Link href="/games" style={{ textDecoration: 'none' }}>
+              <Button
+                size="small"
+                startIcon={<CasinoIcon />}
+                sx={{
+                  color: '#fff',
+                  mr: 1,
+                  '&:hover': {
+                    bgcolor: 'rgba(213,10,10,0.1)',
+                  },
+                }}
+              >
+                Games
+              </Button>
             </Link>
 
             {/* Auth controls */}
